@@ -1,0 +1,301 @@
+# =============================================================================
+# CLite — .gitignore
+# Copyright 2026 (c) XA Studio (eXtended Attention Studio).
+# Licensed under the Apache License, Version 2.0.
+# =============================================================================
+
+# =============================================================================
+# Build directories
+# =============================================================================
+build/
+build-*/
+out/
+_build/
+cmake-build-*/
+
+# =============================================================================
+# CMake generated files
+# =============================================================================
+CMakeCache.txt
+CMakeFiles/
+CMakeScripts/
+CTestTestfile.cmake
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+CPackConfig.cmake
+CPackSourceConfig.cmake
+_CPack_Packages/
+
+# Generated CMake config files (installed artifacts, not source)
+CliteConfig.cmake
+CliteConfigVersion.cmake
+CliteTargets.cmake
+CliteTargets-*.cmake
+
+# =============================================================================
+# Meson generated files
+# =============================================================================
+meson-private/
+meson-logs/
+meson-info/
+.mesonpy/
+
+# =============================================================================
+# Compiled object files and libraries
+# =============================================================================
+*.o
+*.obj
+*.lo
+*.slo
+*.ko
+
+# Static libraries
+*.a
+*.lib
+
+# Shared libraries
+*.so
+*.so.*
+*.dylib
+*.dll
+
+# Executables
+*.exe
+*.out
+*.app
+*.elf
+*.axf
+*.hex
+*.bin
+*.map
+
+# =============================================================================
+# Precompiled headers
+# =============================================================================
+*.gch
+*.pch
+
+# =============================================================================
+# Debug / profiling artifacts
+# =============================================================================
+*.dSYM/
+*.su
+*.idb
+*.pdb
+*.ilk
+*.exp
+
+# Profiling data
+*.gcno
+*.gcda
+*.gcov
+gmon.out
+perf.data
+perf.data.old
+
+# =============================================================================
+# Sanitizer / Valgrind artifacts
+# =============================================================================
+vgcore.*
+core
+core.*
+*.asan
+*.tsan
+*.ubsan
+
+# =============================================================================
+# Code coverage
+# =============================================================================
+*.lcov
+coverage/
+coverage.info
+coverage-report/
+lcov.info
+*.profraw
+*.profdata
+default.profraw
+
+# =============================================================================
+# Fuzz testing artifacts
+# =============================================================================
+crash-*
+leak-*
+timeout-*
+oom-*
+slow-unit-*
+corpus/
+artifacts/
+
+# =============================================================================
+# Doxygen generated documentation
+# =============================================================================
+docs/api/
+docs/html/
+docs/latex/
+docs/xml/
+docs/man/
+docs/rtf/
+doxygen_sqlite3.db
+
+# =============================================================================
+# Package managers
+# =============================================================================
+
+# vcpkg
+vcpkg_installed/
+.vcpkg-root
+
+# Conan
+conanbuildinfo.*
+conaninfo.txt
+conan.lock
+graph_info.json
+.conan/
+
+# =============================================================================
+# Editors and IDEs
+# =============================================================================
+
+# Visual Studio
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.VC.db
+*.VC.opendb
+ipch/
+x64/
+x86/
+*.ncb
+*.opensdf
+*.sdf
+*.aps
+
+# Visual Studio Code
+.vscode/
+!.vscode/extensions.json
+!.vscode/settings.json.example
+
+# CLion / JetBrains
+.idea/
+*.iml
+cmake-build-debug/
+cmake-build-release/
+cmake-build-relwithdebinfo/
+cmake-build-minsizerel/
+
+# Xcode
+*.xcodeproj/
+*.xcworkspace/
+xcuserdata/
+DerivedData/
+*.moved-aside
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+
+# Eclipse CDT
+.cproject
+.project
+.settings/
+.metadata/
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+
+# Vim / Neovim
+[._]*.s[a-v][a-z]
+[._]*.sw[a-p]
+[._]s[a-rt-v][a-z]
+[._]ss[a-gi-z]
+[._]sw[a-p]
+Session.vim
+Sessionx.vim
+.netrwhist
+tags
+[._]*.un~
+
+# Kate
+.*.kate-swp
+
+# =============================================================================
+# Operating system artifacts
+# =============================================================================
+
+# macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+.AppleDouble
+.LSOverride
+Icon
+*.orig
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# Linux
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# =============================================================================
+# Temporary and backup files
+# =============================================================================
+*.tmp
+*.temp
+*.bak
+*.swp
+*.orig
+*.rej
+*.patch
+*~
+
+# =============================================================================
+# Environment and secrets
+# =============================================================================
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+secrets.h
+secrets.c
+
+# =============================================================================
+# Dependency vendoring (keep Unity, exclude everything else fetched by CMake)
+# =============================================================================
+# Allow vendored Unity test framework
+!tests/vendor/
+# Exclude everything CMake FetchContent downloads at configure time
+_deps/
