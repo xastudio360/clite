@@ -1,0 +1,295 @@
+# =============================================================================
+# CLite — .clang-format
+# Copyright (c) XA Studio (eXtended Attention Studio).
+# Licensed under the Apache License, Version 2.0.
+#
+# Baseline: LLVM style, with deliberate deviations documented below.
+# Minimum clang-format version: 14.0
+#
+# Usage:
+#   clang-format -i include/xastudio/clite/*.h src/*.c tests/**/*.c
+#
+# CI enforcement:
+#   clang-format --dry-run --Werror <files>
+# =============================================================================
+
+Language:        Cpp
+BasedOnStyle:    LLVM
+
+# =============================================================================
+# Indentation
+# =============================================================================
+
+# 4-space indentation — consistent with .editorconfig and most C projects.
+IndentWidth:                    4
+TabWidth:                       4
+UseTab:                         Never
+
+# Indent case labels inside switch statements.
+IndentCaseLabels:               true
+
+# Do not indent preprocessor directives — #ifdef ladders at column 0
+# are far more readable, especially in platform detection headers.
+IndentPPDirectives:             None
+
+# Indent the contents of extern "C" { } blocks for clarity when headers
+# are included from C++.
+IndentExternBlock:              Indent
+
+# Do not indent goto labels — they are already visually distinct.
+IndentGotoLabels:               false
+
+# =============================================================================
+# Line length and wrapping
+# =============================================================================
+
+# 100-character column limit — matches .editorconfig. Wide enough for
+# descriptive names and Doxygen comments without excessive wrapping.
+ColumnLimit:                    100
+
+# Always break before the opening brace of a function definition.
+# Consistent with Linux kernel style and most C codebases.
+BreakBeforeBraces:              Linux
+
+# Allow short functions on a single line only when they are truly trivial
+# (empty body). Prevents one-liner definitions that obscure logic.
+AllowShortFunctionsOnASingleLine: Empty
+
+# Never collapse if/else blocks to a single line.
+AllowShortIfStatementsOnASingleLine: Never
+
+# Never collapse loops to a single line.
+AllowShortLoopsOnASingleLine:   false
+
+# Never collapse case labels to a single line.
+AllowShortCaseLabelsOnASingleLine: false
+
+# Never collapse blocks to a single line.
+AllowShortBlocksOnASingleLine:  Never
+
+# =============================================================================
+# Alignment
+# =============================================================================
+
+# Align consecutive macro definitions for readability in defs.h and
+# compiler.h, where tables of #defines are common.
+AlignConsecutiveMacros:
+  Enabled:          true
+  AcrossEmptyLines: false
+  AcrossComments:   false
+
+# Align consecutive variable declarations when they appear in a block,
+# which is common in struct initializers and local variable clusters.
+AlignConsecutiveDeclarations:
+  Enabled:          false   # Disabled: causes churn on unrelated lines.
+  AcrossEmptyLines: false
+  AcrossComments:   false
+
+# Align consecutive assignments (a = 1; b  = 2;) — disabled for the
+# same reason as declarations.
+AlignConsecutiveAssignments:
+  Enabled:          false
+
+# Align escaped newlines in multi-line macros to the rightmost column.
+AlignEscapedNewlines:           Right
+
+# Align operands of binary expressions that span multiple lines.
+AlignOperands:                  Align
+
+# Align trailing comments on consecutive lines.
+AlignTrailingComments:
+  Kind:             Trailing
+  OverEmptyLines:   1
+
+# =============================================================================
+# Pointer and reference alignment
+# =============================================================================
+
+# Pointer declarators are right-aligned: `void *ptr` not `void* ptr`.
+# This avoids the classic `int* a, b` trap where only `a` is a pointer.
+PointerAlignment:               Right
+ReferenceAlignment:             Right
+
+# =============================================================================
+# Spaces
+# =============================================================================
+
+# No space before parentheses in function calls and definitions.
+SpaceBeforeParens:              ControlStatements
+
+# Space inside empty block braces: `{ }` not `{}`.
+SpaceInEmptyBlock:              false
+
+# No space before square brackets in array subscripts.
+SpaceBeforeSquareBrackets:      false
+
+# No space in empty parentheses.
+SpaceInEmptyParentheses:        false
+
+# Space after cast: `(int) x` not `(int)x`.
+SpaceAfterCStyleCast:           true
+
+# Space after `//` comment markers.
+SpacesBeforeTrailingComments:   2
+
+# Spaces inside angle brackets (not applicable to C, but set for safety).
+SpacesInAngles:                 Never
+
+# No spaces inside parentheses of control flow statements.
+SpacesInParentheses:            false
+
+# No spaces inside square brackets.
+SpacesInSquareBrackets:         false
+
+# No spaces inside container literals.
+SpacesInContainerLiterals:      false
+
+# =============================================================================
+# Braces and blocks
+# =============================================================================
+
+# Always attach braces to control statements (if/for/while) per Linux style.
+# Function and struct definitions get the brace on the next line.
+# This is enforced by BreakBeforeBraces: Linux above.
+
+# Insert braces around single-statement control flow bodies.
+# Prevents the classic dangling-else and accidental fall-through bugs.
+InsertBraces:                   true
+
+# =============================================================================
+# Includes
+# =============================================================================
+
+# Sort #include directives.
+SortIncludes:                   CaseSensitive
+
+# Group includes in this order:
+#   1. Related header (the .h matching this .c)
+#   2. C standard library headers
+#   3. CLite internal headers
+#   4. Third-party headers
+# Enforced by IncludeCategories below.
+IncludeBlocks:                  Regroup
+
+IncludeCategories:
+  # C standard library: <stdio.h>, <stdlib.h>, <stdint.h>, etc.
+  - Regex:           '^<(std|assert|ctype|errno|float|inttypes|iso646|limits|locale|math|setjmp|signal|stdalign|stdarg|stdatomic|stdbool|stddef|stdint|stdio|stdlib|string|tgmath|threads|time|uchar|wchar|wctype)\.h>'
+    Priority:        2
+    SortPriority:    2
+    CaseSensitive:   false
+  # POSIX / platform headers: <unistd.h>, <pthread.h>, <windows.h>, etc.
+  - Regex:           '^<[a-z_]+\.h>'
+    Priority:        3
+    SortPriority:    3
+    CaseSensitive:   false
+  # CLite own headers
+  - Regex:           '^[<"]xastudio/clite/'
+    Priority:        1
+    SortPriority:    1
+    CaseSensitive:   true
+  # Everything else (third-party)
+  - Regex:           '.*'
+    Priority:        4
+    SortPriority:    4
+
+# =============================================================================
+# Comments
+# =============================================================================
+
+# Reflow block comments (/** ... */) to fit within the column limit.
+ReflowComments:                 true
+
+# Do not insert a space between // and the comment text when the comment
+# starts with a special marker such as TODO, FIXME, NOTE, NOLINT.
+# (This is the default; no explicit option needed.)
+
+# =============================================================================
+# Macros
+# =============================================================================
+
+# Treat these macros as type declarations so clang-format does not
+# insert unwanted spaces or line breaks inside them.
+TypenameMacros:
+  - CLITE_VEC_DEFINE
+  - CLITE_MAP_DEFINE
+  - CLITE_MAP_DEFINE_EX
+  - CLITE_RESULT_DEFINE
+  - CLITE_OPTION_DEFINE
+  - CLITE_SLICE
+
+# Treat these macros as statement macros (like `if` or `for`) so they
+# are formatted with a trailing semicolon on the same line.
+StatementMacros:
+  - CLITE_ASSERT
+  - CLITE_ASSERT_MSG
+  - CLITE_ASSERT_NOT_NULL
+  - CLITE_ASSERT_IN_RANGE
+  - CLITE_STATIC_ASSERT
+  - CLITE_PANIC
+  - CLITE_PANIC_FMT
+  - CLITE_LOG_TRACE
+  - CLITE_LOG_DEBUG
+  - CLITE_LOG_INFO
+  - CLITE_LOG_WARN
+  - CLITE_LOG_ERROR
+  - CLITE_LOG_FATAL
+  - CLITE_TRY
+  - CLITE_UNUSED
+
+# Treat CLITE_FOREACH-style macros as for-loop macros so the body is
+# indented correctly.
+ForEachMacros:
+  - CLITE_LIST_FOREACH
+
+# =============================================================================
+# Penalties (line-break cost tuning)
+# =============================================================================
+
+# Prefer breaking before a binary operator rather than after, for
+# improved readability in long boolean expressions.
+BreakBeforeBinaryOperators:     NonAssignment
+
+# Strongly prefer not breaking string literals.
+PenaltyBreakString:             1000
+
+# Moderate penalty for breaking before the first call argument.
+PenaltyBreakBeforeFirstCallParameter: 100
+
+# Low penalty for breaking a function return type onto its own line —
+# acceptable for very long return types.
+PenaltyReturnTypeOnItsOwnLine:  200
+
+# =============================================================================
+# Miscellaneous
+# =============================================================================
+
+# Remove trailing semicolons after closing braces of function/struct defs.
+RemoveSemicolon:                false
+
+# Separate definition blocks (functions, structs, enums) with a blank line.
+SeparateDefinitionBlocks:       Leave
+
+# Do not sort using declarations (not applicable in C, but explicit).
+SortUsingDeclarations:          false
+
+# Maximum number of empty lines to keep between declarations.
+MaxEmptyLinesToKeep:            2
+
+# Keep one empty line at the start of a block (common in C for readability).
+KeepEmptyLinesAtTheStartOfBlocks: false
+
+# =============================================================================
+# Disabling clang-format for specific regions
+# =============================================================================
+# To disable formatting for a region, use:
+#
+#   // clang-format off
+#   SOME_MACRO_TABLE(         \
+#       entry(FOO, 1),        \
+#       entry(BAR, 2),        \
+#   )
+#   // clang-format on
+#
+# Use sparingly — only for macro tables or hand-aligned code where
+# clang-format would destroy intentional structure.
+# =============================================================================
