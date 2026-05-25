@@ -1,0 +1,154 @@
+# =============================================================================
+# CLite — .editorconfig
+# Copyright (c) XA Studio (eXtended Attention Studio).
+# Licensed under the Apache License, Version 2.0.
+#
+# EditorConfig: https://editorconfig.org
+# Supported by VS Code, CLion, Visual Studio, Vim, Emacs, and most
+# modern editors either natively or via a plugin.
+# =============================================================================
+
+root = true
+
+# =============================================================================
+# Global defaults — applied to all files unless overridden below
+# =============================================================================
+[*]
+charset                  = utf-8
+end_of_line              = lf
+indent_style             = space
+indent_size              = 4
+tab_width                = 4
+trim_trailing_whitespace = true
+insert_final_newline     = true
+max_line_length          = 100
+
+# =============================================================================
+# C source and header files
+# =============================================================================
+[*.{c,h}]
+charset                  = utf-8
+indent_style             = space
+indent_size              = 4
+tab_width                = 4
+trim_trailing_whitespace = true
+insert_final_newline     = true
+max_line_length          = 100
+
+# =============================================================================
+# CMake files
+# =============================================================================
+[{CMakeLists.txt,*.cmake}]
+indent_style             = space
+indent_size              = 4
+trim_trailing_whitespace = true
+insert_final_newline     = true
+max_line_length          = 100
+
+# =============================================================================
+# Meson build files
+# =============================================================================
+[meson.build]
+indent_style             = space
+indent_size              = 2
+trim_trailing_whitespace = true
+insert_final_newline     = true
+
+# =============================================================================
+# Markdown documentation
+# =============================================================================
+[*.md]
+indent_style             = space
+indent_size              = 2
+# Trailing whitespace in Markdown is meaningful (two spaces = <br>).
+# Do NOT trim it globally; editors should respect this.
+trim_trailing_whitespace = false
+insert_final_newline     = true
+max_line_length          = off
+
+# =============================================================================
+# JSON files (CI workflows, compile_commands, etc.)
+# =============================================================================
+[*.json]
+indent_style             = space
+indent_size              = 2
+trim_trailing_whitespace = true
+insert_final_newline     = true
+
+# =============================================================================
+# YAML files (GitHub Actions workflows, etc.)
+# =============================================================================
+[*.{yml,yaml}]
+indent_style             = space
+indent_size              = 2
+trim_trailing_whitespace = true
+insert_final_newline     = true
+
+# =============================================================================
+# Shell scripts
+# =============================================================================
+[*.sh]
+indent_style             = space
+indent_size              = 2
+trim_trailing_whitespace = true
+insert_final_newline     = true
+end_of_line              = lf
+
+# =============================================================================
+# Python scripts (CI helpers)
+# =============================================================================
+[*.py]
+indent_style             = space
+indent_size              = 4
+trim_trailing_whitespace = true
+insert_final_newline     = true
+
+# =============================================================================
+# Doxygen configuration
+# =============================================================================
+[Doxyfile]
+indent_style             = space
+indent_size              = 4
+trim_trailing_whitespace = true
+insert_final_newline     = true
+
+# =============================================================================
+# Git and EditorConfig meta files (keep as-is)
+# =============================================================================
+[{.gitignore,.gitattributes,.editorconfig}]
+trim_trailing_whitespace = true
+insert_final_newline     = true
+
+# =============================================================================
+# Makefiles — tabs are required by Make syntax
+# =============================================================================
+[Makefile]
+indent_style             = tab
+tab_width                = 4
+trim_trailing_whitespace = true
+insert_final_newline     = true
+
+[*.mk]
+indent_style             = tab
+tab_width                = 4
+trim_trailing_whitespace = true
+insert_final_newline     = true
+
+# =============================================================================
+# Windows batch files — CRLF is required
+# =============================================================================
+[*.{bat,cmd}]
+end_of_line              = crlf
+trim_trailing_whitespace = true
+insert_final_newline     = true
+
+# =============================================================================
+# Binary files — no processing
+# =============================================================================
+[*.{png,jpg,jpeg,gif,ico,svg,pdf,ttf,woff,woff2}]
+charset                  = unset
+end_of_line              = unset
+indent_style             = unset
+indent_size              = unset
+trim_trailing_whitespace = unset
+insert_final_newline     = unset
