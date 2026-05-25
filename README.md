@@ -370,7 +370,7 @@ See [SECURITY.md](SECURITY.md) for the full security policy.
 CLite is released under the [Apache License 2.0](LICENSE).
 
 ```
-Copyright (c) XA Studio (eXtended Attention Studio).
+Copyright 2026 (c) XA Studio (eXtended Attention Studio).
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
