@@ -1,6 +1,6 @@
 # =============================================================================
 # CLite — .clang-format
-# Copyright (c) XA Studio (eXtended Attention Studio).
+# Copyright 2026 (c) XA Studio (eXtended Attention Studio).
 # Licensed under the Apache License, Version 2.0.
 #
 # Baseline: LLVM style, with deliberate deviations documented below.
