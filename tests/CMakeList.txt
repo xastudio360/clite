@@ -1,0 +1,158 @@
+# ==============================================================================
+# CLite — tests/CMakeLists.txt
+# Copyright (c) XA Studio (eXtended Attention Studio).
+# Licensed under the Apache License, Version 2.0.
+# See LICENSE in the project root for license information.
+#
+# Project : xastudio.clite
+# Author  : XA Studio <github.com/xastudio360>
+# Created : 2026-05-29
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# Unity test framework
+# Vendored under tests/vendor/unity/ or fetched via FetchContent.
+# ------------------------------------------------------------------------------
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/vendor/unity/src/unity.c")
+    # Vendored copy — preferred for reproducible builds
+    add_library(unity STATIC
+        vendor/unity/src/unity.c
+    )
+    target_include_directories(unity PUBLIC
+        vendor/unity/src
+    )
+    message(STATUS "[CLite] Using vendored Unity test framework.")
+else()
+    # Fetch from GitHub if not vendored
+    include(FetchContent)
+    FetchContent_Declare(unity
+        GIT_REPOSITORY https://github.com/ThrowTheSwitch/Unity.git
+        GIT_TAG        v2.6.0
+        GIT_SHALLOW    TRUE
+    )
+    FetchContent_MakeAvailable(unity)
+    message(STATUS "[CLite] Fetched Unity test framework v2.6.0.")
+endif()
+
+# ------------------------------------------------------------------------------
+# Helper function: clite_add_unit_test(<name> <source>)
+#
+# Creates a test executable, links it against CLite and Unity, and registers
+# it with CTest. The test binary is named test_<name>.
+# ------------------------------------------------------------------------------
+function(clite_add_unit_test name source)
+    set(_target "test_${name}")
+
+    add_executable(${_target} "${source}")
+    target_link_libraries(${_target} PRIVATE xastudio::clite unity)
+    target_compile_options(${_target} PRIVATE
+        $<$<C_COMPILER_ID:GNU,Clang,AppleClang>:-Wall -Wextra>
+    )
+
+    add_test(
+        NAME    "unit::${name}"
+        COMMAND ${_target}
+    )
+    set_tests_properties("unit::${name}" PROPERTIES
+        LABELS          "unit"
+        TIMEOUT         30
+        FAIL_REGULAR_EXPRESSION "FAIL|ERROR"
+        PASS_REGULAR_EXPRESSION "OK"
+    )
+endfunction()
+
+# ------------------------------------------------------------------------------
+# Helper function: clite_add_integration_test(<name> <source>)
+# ------------------------------------------------------------------------------
+function(clite_add_integration_test name source)
+    set(_target "itest_${name}")
+
+    add_executable(${_target} "${source}")
+    target_link_libraries(${_target} PRIVATE xastudio::clite unity)
+
+    add_test(
+        NAME    "integration::${name}"
+        COMMAND ${_target}
+    )
+    set_tests_properties("integration::${name}" PROPERTIES
+        LABELS          "integration"
+        TIMEOUT         60
+        FAIL_REGULAR_EXPRESSION "FAIL|ERROR"
+        PASS_REGULAR_EXPRESSION "OK"
+    )
+endfunction()
+
+# ------------------------------------------------------------------------------
+# Unit tests
+# Registered here; source files added as phases complete.
+# Each entry maps 1:1 to a source file in tests/unit/.
+# ------------------------------------------------------------------------------
+
+# Phase 1 — Foundation
+# clite_add_unit_test(defs     unit/test_defs.c)
+# clite_add_unit_test(compiler unit/test_compiler.c)
+# clite_add_unit_test(assert   unit/test_assert.c)
+
+# Phase 2 — Memory
+# clite_add_unit_test(mem   unit/test_mem.c)
+# clite_add_unit_test(arena unit/test_arena.c)
+# clite_add_unit_test(pool  unit/test_pool.c)
+
+# Phase 3 — Strings
+# clite_add_unit_test(str     unit/test_str.c)
+# clite_add_unit_test(strbuf  unit/test_strbuf.c)
+# clite_add_unit_test(utf8    unit/test_utf8.c)
+
+# Phase 4 — Collections
+# clite_add_unit_test(slice unit/test_slice.c)
+# clite_add_unit_test(vec   unit/test_vec.c)
+# clite_add_unit_test(map   unit/test_map.c)
+# clite_add_unit_test(list  unit/test_list.c)
+
+# Phase 5 — Errors & Logging
+# clite_add_unit_test(result unit/test_result.c)
+# clite_add_unit_test(option unit/test_option.c)
+# clite_add_unit_test(panic  unit/test_panic.c)
+# clite_add_unit_test(log    unit/test_log.c)
+
+# ------------------------------------------------------------------------------
+# Integration tests
+# ------------------------------------------------------------------------------
+
+# Phase 5+
+# clite_add_integration_test(full_pipeline  integration/test_full_pipeline.c)
+# clite_add_integration_test(embedded_sim   integration/test_embedded_sim.c)
+
+# ------------------------------------------------------------------------------
+# Fuzz targets (built only when a fuzzing engine is available)
+# Fuzz targets are not registered with CTest — they are driven by fuzz.yml.
+# ------------------------------------------------------------------------------
+if(CMAKE_C_COMPILER_ID MATCHES "Clang|AppleClang")
+    option(CLITE_BUILD_FUZZ_TARGETS "Build libFuzzer fuzz targets" OFF)
+
+    if(CLITE_BUILD_FUZZ_TARGETS)
+        function(clite_add_fuzz_target name source)
+            add_executable("fuzz_${name}" "${source}")
+            target_link_libraries("fuzz_${name}" PRIVATE xastudio::clite)
+            target_compile_options("fuzz_${name}" PRIVATE
+                -fsanitize=fuzzer,address,undefined
+            )
+            target_link_options("fuzz_${name}" PRIVATE
+                -fsanitize=fuzzer,address,undefined
+            )
+        endfunction()
+
+        # Phase 3+
+        # clite_add_fuzz_target(str    fuzz/fuzz_str.c)
+        # clite_add_fuzz_target(utf8   fuzz/fuzz_utf8.c)
+        # clite_add_fuzz_target(strbuf fuzz/fuzz_strbuf.c)
+
+        # Phase 4+
+        # clite_add_fuzz_target(map fuzz/fuzz_map.c)
+        # clite_add_fuzz_target(vec fuzz/fuzz_vec.c)
+
+        message(STATUS "[CLite] Fuzz targets ENABLED (libFuzzer).")
+    endif()
+else()
+    message(STATUS "[CLite] Fuzz targets require Clang. Skipping.")
+endif()
