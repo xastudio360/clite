@@ -1,0 +1,27 @@
+# ==============================================================================
+# CLite — cmake/clite.pc.in
+# Copyright (c) XA Studio (eXtended Attention Studio).
+# Licensed under the Apache License, Version 2.0.
+# See LICENSE in the project root for license information.
+#
+# Project : xastudio.clite
+# Author  : XA Studio <github.com/xastudio360>
+# Created : 2026-05-29
+#
+# pkg-config descriptor for CLite.
+# Generated at configure time by CMake.
+# Consumed by: pkg-config --libs --cflags clite
+# ==============================================================================
+
+prefix=@CMAKE_INSTALL_PREFIX@
+exec_prefix=${prefix}
+libdir=${prefix}/@CMAKE_INSTALL_LIBDIR@
+includedir=${prefix}/@CMAKE_INSTALL_INCLUDEDIR@
+
+Name:        CLite
+Description: A forgiving, safe, and modern programming library for C.
+Version:     @CLITE_VERSION@
+URL:         https://github.com/xastudio360/clite
+
+Libs:        -L${libdir} -lclite
+Cflags:      -I${includedir}
