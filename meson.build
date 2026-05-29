@@ -6,7 +6,7 @@
 #
 # Project : xastudio.clite
 # Author  : XA Studio <github.com/xastudio360>
-# Created : 2025-05-25
+# Created : 2026-05-25
 #
 # Minimum Meson version : 0.60.0
 # Usage:
