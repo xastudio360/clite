@@ -1,0 +1,259 @@
+name: Bug Report
+description: Report a reproducible bug in CLite.
+title: "fix(<module>): <short description>"
+labels: ["bug", "triage"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Before You Submit
+        - Search [existing issues](https://github.com/xastudio360/clite/issues) to avoid duplicates.
+        - If this is a **security vulnerability**, do **not** open a public issue.
+          Use [GitHub Security Advisories](https://github.com/xastudio360/clite/security/advisories/new) instead.
+        - Fill in every required field. Incomplete reports will be asked to revise before triage begins.
+
+  # ---------------------------------------------------------------------------
+  - type: dropdown
+    id: module
+    attributes:
+      label: Affected Module
+      description: Which CLite module does this bug occur in?
+      multiple: false
+      options:
+        - "clite_defs"
+        - "clite_compiler"
+        - "clite_assert"
+        - "clite_mem"
+        - "clite_arena"
+        - "clite_pool"
+        - "clite_str"
+        - "clite_strbuf"
+        - "clite_utf8"
+        - "clite_slice"
+        - "clite_vec"
+        - "clite_map"
+        - "clite_list"
+        - "clite_result"
+        - "clite_option"
+        - "clite_panic"
+        - "clite_log"
+        - "clite_trace"
+        - "clite_ffi"
+        - "Build system / CMake"
+        - "Build system / Meson"
+        - "CI / Toolchain"
+        - "Documentation"
+        - "Other / Unknown"
+    validations:
+      required: true
+
+  # ---------------------------------------------------------------------------
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      description: |
+        How severe is this bug?
+        Refer to the [severity classification](https://github.com/xastudio360/clite/blob/main/SECURITY.md#severity-classification)
+        in `SECURITY.md` for security-related bugs.
+      options:
+        - "🔴 Critical — memory corruption, undefined behavior, security impact"
+        - "🟡 Moderate — incorrect output, data loss, significant functional regression"
+        - "🟢 Minor — cosmetic, edge case, workaround available"
+        - "ℹ️ Unknown — I am not sure"
+    validations:
+      required: true
+
+  # ---------------------------------------------------------------------------
+  - type: input
+    id: version
+    attributes:
+      label: CLite Version
+      description: |
+        The exact version where the bug occurs.
+        Run `CLITE_VERSION_STRING` or check the CMake output.
+      placeholder: "e.g. 0.3.0-12"
+    validations:
+      required: true
+
+  # ---------------------------------------------------------------------------
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating System
+      multiple: true
+      options:
+        - "Linux (x86-64)"
+        - "Linux (ARM64)"
+        - "Linux (ARMv7)"
+        - "Linux (RISC-V 64)"
+        - "macOS (x86-64)"
+        - "macOS (ARM64 / Apple Silicon)"
+        - "Windows (x86-64) — MSVC"
+        - "Windows (x86-64) — MinGW / Clang-cl"
+        - "Bare metal (ARMv7-M / Cortex-M)"
+        - "Bare metal (ARMv8-M / Cortex-M)"
+        - "WebAssembly / WASI"
+        - "Other (describe in Additional Context)"
+    validations:
+      required: true
+
+  # ---------------------------------------------------------------------------
+  - type: dropdown
+    id: compiler
+    attributes:
+      label: Compiler & Version
+      multiple: false
+      options:
+        - "GCC 8.x"
+        - "GCC 10.x"
+        - "GCC 12.x"
+        - "GCC 14.x"
+        - "Clang 7.x"
+        - "Clang 14.x"
+        - "Clang 16.x"
+        - "Clang 18.x"
+        - "MSVC 19.20 (VS 2019)"
+        - "MSVC 19.40 (VS 2022)"
+        - "arm-none-eabi-gcc"
+        - "IAR"
+        - "Keil ARM CC"
+        - "Other (describe in Additional Context)"
+    validations:
+      required: true
+
+  # ---------------------------------------------------------------------------
+  - type: dropdown
+    id: build_type
+    attributes:
+      label: Build Configuration
+      multiple: true
+      options:
+        - "Debug (default)"
+        - "Release (CLITE_RELEASE=ON)"
+        - "CLITE_NO_STDLIB=ON"
+        - "CLITE_SANITIZERS=ON (ASan)"
+        - "CLITE_SANITIZERS=ON (UBSan)"
+        - "CLITE_SANITIZERS=ON (TSan)"
+        - "Valgrind"
+    validations:
+      required: true
+
+  # ---------------------------------------------------------------------------
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: |
+        A clear and concise description of the bug.
+        What happened? What did you expect to happen?
+      placeholder: |
+        When calling `clite_strbuf_append_fmt()` with a format string longer than
+        512 bytes, the function silently truncates the output without returning an
+        error. I expected it to return `false` and leave the buffer unchanged.
+    validations:
+      required: true
+
+  # ---------------------------------------------------------------------------
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal Reproduction
+      description: |
+        A self-contained C program that reproduces the bug.
+        The smaller the better. If it is longer than ~50 lines, attach it as a file.
+        **This field is required.** Reports without a reproduction case
+        cannot be triaged and will be closed.
+      render: c
+      placeholder: |
+        #include <xastudio/clite/clite.h>
+        #include <stdio.h>
+
+        int main(void) {
+            CliteStrBuf buf;
+            clite_strbuf_init(&buf, CLITE_MEM_DEFAULT);
+
+            /* BUG: returns true instead of false on truncation */
+            bool ok = clite_strbuf_append_fmt(&buf, "%600s", "x");
+            printf("ok = %d\n", (int)ok);  /* prints 1, expected 0 */
+
+            clite_strbuf_destroy(&buf);
+            return 0;
+        }
+    validations:
+      required: true
+
+  # ---------------------------------------------------------------------------
+  - type: textarea
+    id: actual_behavior
+    attributes:
+      label: Actual Behavior
+      description: |
+        What actually happens when you run the reproduction case?
+        Include compiler output, program output, crash messages,
+        sanitizer reports, or Valgrind output where applicable.
+      placeholder: |
+        ok = 1
+
+        ==12345==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x...
+    validations:
+      required: true
+
+  # ---------------------------------------------------------------------------
+  - type: textarea
+    id: expected_behavior
+    attributes:
+      label: Expected Behavior
+      description: What should happen according to the documentation or your understanding?
+      placeholder: |
+        `clite_strbuf_append_fmt()` should return `false` and leave the buffer
+        unmodified when the formatted output would exceed the internal limit.
+    validations:
+      required: true
+
+  # ---------------------------------------------------------------------------
+  - type: textarea
+    id: sanitizer_output
+    attributes:
+      label: Sanitizer / Valgrind Output
+      description: |
+        If you have run the reproduction case under ASan, UBSan, TSan,
+        or Valgrind, paste the full output here.
+        If not applicable, leave this field blank.
+      render: shell
+    validations:
+      required: false
+
+  # ---------------------------------------------------------------------------
+  - type: textarea
+    id: additional_context
+    attributes:
+      label: Additional Context
+      description: |
+        Anything else that might be relevant:
+        - Link to a related issue or PR
+        - A suspected root cause or relevant code path
+        - Impact on your project
+        - Suggested fix (optional but welcome)
+      placeholder: |
+        This affects our embedded target (Cortex-M4, arm-none-eabi-gcc 12.3)
+        where buffer overflows have no OS-level protection. A silent truncation
+        without an error return corrupts downstream state.
+    validations:
+      required: false
+
+  # ---------------------------------------------------------------------------
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Submission Checklist
+      options:
+        - label: I have searched existing issues and this is not a duplicate.
+          required: true
+        - label: I have provided a minimal, self-contained reproduction case.
+          required: true
+        - label: This is not a security vulnerability (those go to GitHub Security Advisories).
+          required: true
+        - label: I have read [CONTRIBUTING.md](https://github.com/xastudio360/clite/blob/main/CONTRIBUTING.md).
+          required: true
