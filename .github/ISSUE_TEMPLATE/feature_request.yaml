@@ -1,0 +1,228 @@
+name: Feature Request
+description: Propose a new feature, module, or API addition for CLite.
+title: "feat(<module>): <short description>"
+labels: ["enhancement", "triage"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Before You Submit
+        - Search [existing issues](https://github.com/xastudio360/clite/issues) to avoid duplicates.
+        - Check the [Roadmap](https://github.com/xastudio360/clite/blob/main/ROADMAP.md) —
+          your feature may already be planned.
+        - For large or architectural changes, open a discussion first and wait for
+          maintainer feedback before investing time in implementation. This is described
+          in [CONTRIBUTING.md](https://github.com/xastudio360/clite/blob/main/CONTRIBUTING.md).
+        - Fill in every required field. Vague requests will be asked to revise before triage begins.
+
+  # ---------------------------------------------------------------------------
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Request Type
+      description: What kind of addition is this?
+      options:
+        - "New module — a self-contained module not currently in CLite"
+        - "New API — a function, macro, or type added to an existing module"
+        - "API improvement — a change to an existing API (signature, behavior, ergonomics)"
+        - "Build system — CMake, Meson, or toolchain support"
+        - "Platform support — new OS, architecture, or compiler"
+        - "Performance — optimization of existing functionality"
+        - "Documentation — new or improved documentation"
+        - "Developer experience — tooling, CI, formatting, samples"
+        - "Other"
+    validations:
+      required: true
+
+  # ---------------------------------------------------------------------------
+  - type: dropdown
+    id: module
+    attributes:
+      label: Affected or Proposed Module
+      description: Which module does this request relate to? Select "New module" if proposing one.
+      multiple: false
+      options:
+        - "New module"
+        - "clite_defs"
+        - "clite_compiler"
+        - "clite_assert"
+        - "clite_mem"
+        - "clite_arena"
+        - "clite_pool"
+        - "clite_str"
+        - "clite_strbuf"
+        - "clite_utf8"
+        - "clite_slice"
+        - "clite_vec"
+        - "clite_map"
+        - "clite_list"
+        - "clite_result"
+        - "clite_option"
+        - "clite_panic"
+        - "clite_log"
+        - "clite_trace"
+        - "clite_ffi"
+        - "Build system / CMake"
+        - "Build system / Meson"
+        - "CI / Toolchain"
+        - "Documentation"
+        - "Other / Cross-cutting"
+    validations:
+      required: true
+
+  # ---------------------------------------------------------------------------
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Perceived Priority
+      description: How important is this to you?
+      options:
+        - "🔴 Blocking — I cannot use CLite without this"
+        - "🟡 High — significantly improves my use case"
+        - "🟢 Normal — useful addition, not urgent"
+        - "ℹ️ Low — nice to have"
+    validations:
+      required: true
+
+  # ---------------------------------------------------------------------------
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem Statement
+      description: |
+        What problem does this feature solve? Describe the concrete situation
+        where the absence of this feature is a pain point.
+        Do **not** describe the solution yet — describe the problem.
+      placeholder: |
+        When building a request parser on an embedded target, I need to process
+        a large number of small, short-lived string tokens. Using the default
+        allocator results in heavy fragmentation and unpredictable allocation
+        latency. CLite currently has no way to back `CliteStrBuf` with an arena
+        allocator when constructing temporary strings in a tight loop.
+    validations:
+      required: true
+
+  # ---------------------------------------------------------------------------
+  - type: textarea
+    id: proposed_solution
+    attributes:
+      label: Proposed Solution
+      description: |
+        Describe the feature you would like to see. If you have a concrete API
+        proposal, include it here. Use C code blocks for API sketches.
+        If you are unsure about the exact API, describe the behavior you expect.
+      placeholder: |
+        Allow `clite_strbuf_init()` to accept any `CliteAllocator`, not just
+        `CLITE_MEM_DEFAULT`. This is already how `clite_vec` and `clite_map`
+        work, so it would make the API consistent:
+
+        ```c
+        CliteArena arena;
+        clite_arena_init(&arena, CLITE_MEM_DEFAULT, 4096);
+
+        CliteStrBuf buf;
+        /* Pass the arena allocator directly: */
+        clite_strbuf_init(&buf, clite_arena_allocator(&arena));
+
+        clite_strbuf_append_cstr(&buf, "hello");
+        /* ... */
+
+        clite_arena_reset(&arena);  /* frees everything at once */
+        ```
+      render: c
+    validations:
+      required: true
+
+  # ---------------------------------------------------------------------------
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: |
+        What alternatives have you considered or tried?
+        Why are they insufficient?
+      placeholder: |
+        I considered pre-allocating a fixed-size stack buffer and using
+        `snprintf` directly, but this loses the safe append semantics and
+        requires knowing the maximum size upfront, which is not always
+        possible in a streaming parser.
+
+        I also looked at wrapping `CliteStrBuf` manually inside my own struct
+        with a custom allocator, but this duplicates logic that CLite already
+        has internally.
+    validations:
+      required: false
+
+  # ---------------------------------------------------------------------------
+  - type: textarea
+    id: api_contract
+    attributes:
+      label: API Contract & Edge Cases
+      description: |
+        If you have a concrete API proposal, describe:
+        - Ownership semantics (who owns the returned value?)
+        - Error conditions (what can fail? what does it return?)
+        - Behavior in `CLITE_NO_STDLIB` mode (if applicable)
+        - Thread safety expectations
+        - Any edge cases the implementation must handle
+
+        Leave blank if you do not have a specific API in mind.
+      placeholder: |
+        - The `CliteAllocator` passed to `clite_strbuf_init()` is borrowed:
+          the caller owns the allocator and must ensure it outlives the buffer.
+        - All existing `clite_strbuf_*` functions remain unchanged.
+        - If the allocator is a pool and returns NULL on exhaustion,
+          `clite_strbuf_append_*` must return `false` without modifying the buffer.
+        - In `CLITE_NO_STDLIB` mode, behavior is identical; the allocator
+          abstraction already handles the stdlib dependency.
+    validations:
+      required: false
+
+  # ---------------------------------------------------------------------------
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional Context
+      description: |
+        Anything else that supports this request:
+        - Links to prior art (how other libraries solve this)
+        - Benchmarks or profiling data
+        - Related issues or PRs
+        - Whether you are willing to implement this yourself
+      placeholder: |
+        This pattern is used in jemalloc's arena API and in Zig's allocator
+        interface. A similar feature request was raised for a different module
+        in #31.
+
+        I am willing to implement this and submit a PR if the maintainers
+        agree on the API direction.
+    validations:
+      required: false
+
+  # ---------------------------------------------------------------------------
+  - type: dropdown
+    id: contribution
+    attributes:
+      label: Are You Willing to Implement This?
+      options:
+        - "Yes — I will submit a PR if the direction is approved"
+        - "Partially — I can start but may need guidance"
+        - "No — I am requesting this for the maintainers to consider"
+    validations:
+      required: true
+
+  # ---------------------------------------------------------------------------
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Submission Checklist
+      options:
+        - label: I have searched existing issues and this is not a duplicate.
+          required: true
+        - label: I have checked the Roadmap and this is not already planned.
+          required: true
+        - label: I have described the problem, not just the solution.
+          required: true
+        - label: I have read [CONTRIBUTING.md](https://github.com/xastudio360/clite/blob/main/CONTRIBUTING.md).
+          required: true
