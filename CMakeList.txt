@@ -1,0 +1,434 @@
+# ==============================================================================
+# CLite — CMakeLists.txt
+# Copyright (c) XA Studio (eXtended Attention Studio).
+# Licensed under the Apache License, Version 2.0.
+# See LICENSE in the project root for license information.
+#
+# Project : xastudio.clite
+# Author  : XA Studio <github.com/xastudio360>
+# Created : 2026-05-29
+# ==============================================================================
+
+cmake_minimum_required(VERSION 3.16)
+
+# ------------------------------------------------------------------------------
+# Version
+# Mirrors CLITE_VERSION_* macros in include/xastudio/clite/defs.h.
+# Both must be updated together on every release.
+# ------------------------------------------------------------------------------
+set(CLITE_VERSION_MAJOR 0)
+set(CLITE_VERSION_MINOR 1)
+set(CLITE_VERSION_PATCH 0)
+set(CLITE_VERSION_BUILD 1)
+set(CLITE_VERSION
+    "${CLITE_VERSION_MAJOR}.${CLITE_VERSION_MINOR}.${CLITE_VERSION_PATCH}-${CLITE_VERSION_BUILD}")
+
+project(clite
+    VERSION      "${CLITE_VERSION_MAJOR}.${CLITE_VERSION_MINOR}.${CLITE_VERSION_PATCH}"
+    DESCRIPTION  "A forgiving, safe, and modern programming library for C."
+    HOMEPAGE_URL "https://github.com/xastudio360/clite"
+    LANGUAGES    C
+)
+
+# ------------------------------------------------------------------------------
+# CMake policies
+# ------------------------------------------------------------------------------
+cmake_policy(SET CMP0048 NEW)  # project() manages VERSION variables
+cmake_policy(SET CMP0077 NEW)  # option() does not override cache variables
+if(POLICY CMP0135)
+    cmake_policy(SET CMP0135 NEW)  # FetchContent timestamp behaviour
+endif()
+
+# ------------------------------------------------------------------------------
+# Guard against in-source builds
+# ------------------------------------------------------------------------------
+if(CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
+    message(FATAL_ERROR
+        "[CLite] In-source builds are not allowed.\n"
+        "Please create a separate build directory:\n"
+        "  cmake -B build\n"
+        "  cmake --build build"
+    )
+endif()
+
+# ------------------------------------------------------------------------------
+# Default build type
+# ------------------------------------------------------------------------------
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+    message(STATUS "[CLite] No build type specified — defaulting to Debug.")
+    set(CMAKE_BUILD_TYPE "Debug" CACHE STRING
+        "Build type: Debug | Release | RelWithDebInfo | MinSizeRel" FORCE)
+    set_property(CACHE CMAKE_BUILD_TYPE PROPERTY
+        STRINGS "Debug" "Release" "RelWithDebInfo" "MinSizeRel")
+endif()
+
+# ------------------------------------------------------------------------------
+# CMake modules
+# ------------------------------------------------------------------------------
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+include(GNUInstallDirs)
+include(CMakePackageConfigHelpers)
+
+# ------------------------------------------------------------------------------
+# Options
+# ------------------------------------------------------------------------------
+option(CLITE_BUILD_TESTS
+    "Build the CLite unit and integration test suite"           ON)
+option(CLITE_BUILD_SAMPLES
+    "Build the CLite sample programs"                          ON)
+option(CLITE_BUILD_DOCS
+    "Generate Doxygen API reference (requires Doxygen)"        OFF)
+option(CLITE_INSTALL
+    "Generate install targets and CMake package config"        ON)
+option(CLITE_RELEASE
+    "Disable bounds checks and assertions (production builds)" OFF)
+option(CLITE_NO_STDLIB
+    "Strip all <stdlib.h> dependencies (embedded targets)"     OFF)
+option(CLITE_SANITIZERS
+    "Enable AddressSanitizer + UndefinedBehaviorSanitizer"     OFF)
+option(CLITE_COVERAGE
+    "Enable gcov/lcov code coverage instrumentation"           OFF)
+option(CLITE_WARNINGS_AS_ERRORS
+    "Treat all compiler warnings as errors (-Werror)"          ON)
+
+set(CLITE_LOG_LEVEL "DEBUG" CACHE STRING
+    "Compile-time minimum log level: TRACE | DEBUG | INFO | WARN | ERROR | FATAL")
+set_property(CACHE CLITE_LOG_LEVEL PROPERTY
+    STRINGS "TRACE" "DEBUG" "INFO" "WARN" "ERROR" "FATAL")
+
+# ------------------------------------------------------------------------------
+# C standard
+# ------------------------------------------------------------------------------
+set(CMAKE_C_STANDARD          17)
+set(CMAKE_C_STANDARD_REQUIRED ON)
+set(CMAKE_C_EXTENSIONS        OFF)  # Use -std=c17, not -std=gnu17
+
+# ------------------------------------------------------------------------------
+# Module source lists
+# (Populated incrementally as phases complete. Phase 0: stubs only.)
+# ------------------------------------------------------------------------------
+
+# Foundation — Phase 1
+set(CLITE_SOURCES_FOUNDATION
+    # Header-only in Phase 1; .c files added as needed.
+)
+
+# Memory — Phase 2
+set(CLITE_SOURCES_MEMORY
+    src/mem.c
+    src/arena.c
+    src/pool.c
+)
+
+# Strings — Phase 3
+set(CLITE_SOURCES_STRINGS
+    src/str.c
+    src/strbuf.c
+    src/utf8.c
+)
+
+# Collections — Phase 4
+set(CLITE_SOURCES_COLLECTIONS
+    src/vec.c
+    src/map.c
+)
+
+# Errors & Logging — Phase 5
+set(CLITE_SOURCES_ERRORS
+    src/log.c
+)
+
+# FFI — Phase 6+
+set(CLITE_SOURCES_FFI
+    src/ffi.c
+)
+
+# Aggregate — all sources that exist right now
+set(CLITE_SOURCES
+    ${CLITE_SOURCES_FOUNDATION}
+    ${CLITE_SOURCES_MEMORY}
+    ${CLITE_SOURCES_STRINGS}
+    ${CLITE_SOURCES_COLLECTIONS}
+    ${CLITE_SOURCES_ERRORS}
+    ${CLITE_SOURCES_FFI}
+)
+
+# Public headers — every module header
+set(CLITE_PUBLIC_HEADERS
+    include/xastudio/clite/clite.h
+    include/xastudio/clite/defs.h
+    include/xastudio/clite/compiler.h
+    include/xastudio/clite/assert.h
+    include/xastudio/clite/mem.h
+    include/xastudio/clite/arena.h
+    include/xastudio/clite/pool.h
+    include/xastudio/clite/rc.h
+    include/xastudio/clite/str.h
+    include/xastudio/clite/strbuf.h
+    include/xastudio/clite/utf8.h
+    include/xastudio/clite/slice.h
+    include/xastudio/clite/vec.h
+    include/xastudio/clite/map.h
+    include/xastudio/clite/list.h
+    include/xastudio/clite/result.h
+    include/xastudio/clite/option.h
+    include/xastudio/clite/panic.h
+    include/xastudio/clite/io.h
+    include/xastudio/clite/path.h
+    include/xastudio/clite/fmt.h
+    include/xastudio/clite/atomic.h
+    include/xastudio/clite/mutex.h
+    include/xastudio/clite/thread.h
+    include/xastudio/clite/log.h
+    include/xastudio/clite/trace.h
+    include/xastudio/clite/ffi.h
+    include/xastudio/clite/ffi_wasm.h
+)
+
+# ------------------------------------------------------------------------------
+# Main library target
+# ------------------------------------------------------------------------------
+add_library(clite ${CLITE_SOURCES})
+add_library(xastudio::clite ALIAS clite)
+
+# Target include directories
+target_include_directories(clite
+    PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+)
+
+# Public headers (CMake 3.23+: FILE_SET; 3.16 fallback: set_target_properties)
+if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.23")
+    target_sources(clite
+        PUBLIC FILE_SET HEADERS
+        BASE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/include"
+        FILES ${CLITE_PUBLIC_HEADERS}
+    )
+else()
+    set_target_properties(clite PROPERTIES PUBLIC_HEADER "${CLITE_PUBLIC_HEADERS}")
+endif()
+
+# Version information
+target_compile_definitions(clite PUBLIC
+    CLITE_VERSION_MAJOR=${CLITE_VERSION_MAJOR}
+    CLITE_VERSION_MINOR=${CLITE_VERSION_MINOR}
+    CLITE_VERSION_PATCH=${CLITE_VERSION_PATCH}
+    CLITE_VERSION_BUILD=${CLITE_VERSION_BUILD}
+)
+
+# ------------------------------------------------------------------------------
+# Per-module interface targets
+# Consumers can link individual modules instead of the full library.
+# These are INTERFACE targets — they pull in the full library plus their
+# specific include path. As modules gain separate .a outputs, these will
+# be updated.
+# ------------------------------------------------------------------------------
+foreach(_module IN ITEMS
+        defs compiler assert
+        mem arena pool rc
+        str strbuf utf8
+        slice vec map list
+        result option panic
+        io path fmt
+        atomic mutex thread
+        log trace
+        ffi ffi_wasm)
+    add_library(clite_${_module} INTERFACE)
+    add_library(xastudio::clite::${_module} ALIAS clite_${_module})
+    target_link_libraries(clite_${_module} INTERFACE xastudio::clite)
+endforeach()
+
+# ------------------------------------------------------------------------------
+# Compile definitions
+# ------------------------------------------------------------------------------
+if(CLITE_RELEASE)
+    target_compile_definitions(clite PUBLIC CLITE_RELEASE)
+    message(STATUS "[CLite] Release mode: bounds checks and assertions DISABLED.")
+endif()
+
+if(CLITE_NO_STDLIB)
+    target_compile_definitions(clite PUBLIC CLITE_NO_STDLIB)
+    message(STATUS "[CLite] No-stdlib mode: standard library dependencies STRIPPED.")
+endif()
+
+target_compile_definitions(clite PUBLIC
+    CLITE_LOG_LEVEL_${CLITE_LOG_LEVEL}
+)
+
+# ------------------------------------------------------------------------------
+# Compiler flags helper
+# ------------------------------------------------------------------------------
+include(cmake/CliteCompilerFlags.cmake)
+clite_set_compiler_flags(clite)
+
+# ------------------------------------------------------------------------------
+# Sanitizers
+# ------------------------------------------------------------------------------
+if(CLITE_SANITIZERS)
+    if(MSVC)
+        message(WARNING "[CLite] Sanitizers are not supported on MSVC. Skipping.")
+    else()
+        message(STATUS "[CLite] Sanitizers ENABLED: ASan + UBSan.")
+        target_compile_options(clite PUBLIC
+            -fsanitize=address,undefined
+            -fno-omit-frame-pointer
+            -fno-optimize-sibling-calls
+        )
+        target_link_options(clite PUBLIC
+            -fsanitize=address,undefined
+        )
+    endif()
+endif()
+
+# ------------------------------------------------------------------------------
+# Coverage
+# ------------------------------------------------------------------------------
+if(CLITE_COVERAGE)
+    if(MSVC)
+        message(WARNING "[CLite] Coverage instrumentation is not supported on MSVC. Skipping.")
+    else()
+        message(STATUS "[CLite] Coverage instrumentation ENABLED.")
+        target_compile_options(clite PUBLIC --coverage -fprofile-arcs -ftest-coverage)
+        target_link_options(clite PUBLIC --coverage)
+    endif()
+endif()
+
+# ------------------------------------------------------------------------------
+# Tests
+# ------------------------------------------------------------------------------
+if(CLITE_BUILD_TESTS)
+    enable_testing()
+    add_subdirectory(tests)
+endif()
+
+# ------------------------------------------------------------------------------
+# Samples
+# ------------------------------------------------------------------------------
+if(CLITE_BUILD_SAMPLES)
+    add_subdirectory(samples)
+endif()
+
+# ------------------------------------------------------------------------------
+# Documentation
+# ------------------------------------------------------------------------------
+if(CLITE_BUILD_DOCS)
+    find_package(Doxygen REQUIRED dot)
+    if(DOXYGEN_FOUND)
+        set(DOXYGEN_PROJECT_NAME        "CLite")
+        set(DOXYGEN_PROJECT_BRIEF       "A forgiving, safe, and modern programming library for C.")
+        set(DOXYGEN_PROJECT_VERSION     "${CLITE_VERSION}")
+        set(DOXYGEN_OUTPUT_DIRECTORY    "${CMAKE_CURRENT_BINARY_DIR}/docs")
+        set(DOXYGEN_EXTRACT_ALL         YES)
+        set(DOXYGEN_EXTRACT_STATIC      YES)
+        set(DOXYGEN_GENERATE_HTML       YES)
+        set(DOXYGEN_GENERATE_LATEX      NO)
+        set(DOXYGEN_GENERATE_MAN        NO)
+        set(DOXYGEN_WARN_AS_ERROR       YES)
+        set(DOXYGEN_RECURSIVE           YES)
+        set(DOXYGEN_USE_MDFILE_AS_MAINPAGE "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
+
+        doxygen_add_docs(clite_docs
+            "${CMAKE_CURRENT_SOURCE_DIR}/include"
+            "${CMAKE_CURRENT_SOURCE_DIR}/README.md"
+            COMMENT "Generating CLite API reference with Doxygen"
+        )
+    else()
+        message(WARNING "[CLite] Doxygen not found — documentation target skipped.")
+    endif()
+endif()
+
+# ------------------------------------------------------------------------------
+# Installation
+# ------------------------------------------------------------------------------
+if(CLITE_INSTALL)
+    # Library and headers
+    install(TARGETS clite
+        EXPORT          CliteTargets
+        ARCHIVE         DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+        LIBRARY         DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+        RUNTIME         DESTINATION "${CMAKE_INSTALL_BINDIR}"
+        PUBLIC_HEADER   DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/xastudio/clite"
+    )
+
+    # Per-module interface targets
+    foreach(_module IN ITEMS
+            defs compiler assert
+            mem arena pool rc
+            str strbuf utf8
+            slice vec map list
+            result option panic
+            io path fmt
+            atomic mutex thread
+            log trace
+            ffi ffi_wasm)
+        install(TARGETS clite_${_module}
+            EXPORT CliteTargets
+        )
+    endforeach()
+
+    # CMake targets file
+    install(EXPORT CliteTargets
+        FILE        CliteTargets.cmake
+        NAMESPACE   xastudio::
+        DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/clite"
+    )
+
+    # CMake config file
+    configure_package_config_file(
+        "${CMAKE_CURRENT_SOURCE_DIR}/cmake/CliteConfig.cmake.in"
+        "${CMAKE_CURRENT_BINARY_DIR}/CliteConfig.cmake"
+        INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/clite"
+    )
+
+    # CMake version file
+    write_basic_package_version_file(
+        "${CMAKE_CURRENT_BINARY_DIR}/CliteConfigVersion.cmake"
+        VERSION       "${PROJECT_VERSION}"
+        COMPATIBILITY SameMajorVersion
+    )
+
+    install(FILES
+        "${CMAKE_CURRENT_BINARY_DIR}/CliteConfig.cmake"
+        "${CMAKE_CURRENT_BINARY_DIR}/CliteConfigVersion.cmake"
+        DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/clite"
+    )
+
+    # pkg-config
+    configure_file(
+        "${CMAKE_CURRENT_SOURCE_DIR}/cmake/clite.pc.in"
+        "${CMAKE_CURRENT_BINARY_DIR}/clite.pc"
+        @ONLY
+    )
+    install(FILES
+        "${CMAKE_CURRENT_BINARY_DIR}/clite.pc"
+        DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig"
+    )
+endif()
+
+# ------------------------------------------------------------------------------
+# Summary
+# ------------------------------------------------------------------------------
+message(STATUS "")
+message(STATUS "══════════════════════════════════════════════")
+message(STATUS "  CLite ${CLITE_VERSION}")
+message(STATUS "  by XA Studio (eXtended Attention Studio)")
+message(STATUS "══════════════════════════════════════════════")
+message(STATUS "  C standard       : C${CMAKE_C_STANDARD}")
+message(STATUS "  Build type       : ${CMAKE_BUILD_TYPE}")
+message(STATUS "  Compiler         : ${CMAKE_C_COMPILER_ID} ${CMAKE_C_COMPILER_VERSION}")
+message(STATUS "  Install prefix   : ${CMAKE_INSTALL_PREFIX}")
+message(STATUS "  ── Options ──────────────────────────────── ")
+message(STATUS "  Release mode     : ${CLITE_RELEASE}")
+message(STATUS "  No-stdlib mode   : ${CLITE_NO_STDLIB}")
+message(STATUS "  Sanitizers       : ${CLITE_SANITIZERS}")
+message(STATUS "  Coverage         : ${CLITE_COVERAGE}")
+message(STATUS "  Warnings→errors  : ${CLITE_WARNINGS_AS_ERRORS}")
+message(STATUS "  Log level        : ${CLITE_LOG_LEVEL}")
+message(STATUS "  ── Targets ──────────────────────────────── ")
+message(STATUS "  Build tests      : ${CLITE_BUILD_TESTS}")
+message(STATUS "  Build samples    : ${CLITE_BUILD_SAMPLES}")
+message(STATUS "  Build docs       : ${CLITE_BUILD_DOCS}")
+message(STATUS "  Install targets  : ${CLITE_INSTALL}")
+message(STATUS "══════════════════════════════════════════════")
+message(STATUS "")
