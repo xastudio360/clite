@@ -1,0 +1,72 @@
+# ==============================================================================
+# CLite — meson.options
+# Copyright (c) XA Studio (eXtended Attention Studio).
+# Licensed under the Apache License, Version 2.0.
+# See LICENSE in the project root for license information.
+#
+# Project : xastudio.clite
+# Author  : XA Studio <github.com/xastudio360>
+# Created : 2026-05-25
+#
+# Meson 1.1+ uses meson.options; older versions use meson_options.txt.
+# This file works with both naming conventions.
+#
+# Usage:
+#   meson setup build -Dclite_release=true
+#   meson setup build -Dclite_log_level=WARN
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# Build modes
+# ------------------------------------------------------------------------------
+option('clite_release',
+    type        : 'boolean',
+    value       : false,
+    description : 'Disable bounds checks and assertions (production builds).',
+)
+
+option('clite_no_stdlib',
+    type        : 'boolean',
+    value       : false,
+    description : 'Strip all <stdlib.h> dependencies (embedded / bare-metal targets).',
+)
+
+# ------------------------------------------------------------------------------
+# Instrumentation
+# ------------------------------------------------------------------------------
+option('clite_sanitizers',
+    type        : 'boolean',
+    value       : false,
+    description : 'Enable AddressSanitizer + UndefinedBehaviorSanitizer (GCC/Clang only).',
+)
+
+option('clite_coverage',
+    type        : 'boolean',
+    value       : false,
+    description : 'Enable gcov/lcov code coverage instrumentation (GCC/Clang only).',
+)
+
+# ------------------------------------------------------------------------------
+# Logging
+# ------------------------------------------------------------------------------
+option('clite_log_level',
+    type        : 'combo',
+    choices     : ['TRACE', 'DEBUG', 'INFO', 'WARN', 'ERROR', 'FATAL'],
+    value       : 'DEBUG',
+    description : 'Compile-time minimum log level. Messages below this level are stripped.',
+)
+
+# ------------------------------------------------------------------------------
+# Build targets
+# ------------------------------------------------------------------------------
+option('clite_tests',
+    type        : 'boolean',
+    value       : true,
+    description : 'Build the CLite unit and integration test suite.',
+)
+
+option('clite_samples',
+    type        : 'boolean',
+    value       : true,
+    description : 'Build the CLite sample programs.',
+)
