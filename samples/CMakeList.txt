@@ -1,0 +1,53 @@
+# ==============================================================================
+# CLite — samples/CMakeLists.txt
+# Copyright (c) XA Studio (eXtended Attention Studio).
+# Licensed under the Apache License, Version 2.0.
+# See LICENSE in the project root for license information.
+#
+# Project : xastudio.clite
+# Author  : XA Studio <github.com/xastudio360>
+# Created : 2026-05-29
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# Helper function: clite_add_sample(<number> <name>)
+#
+# Creates a sample executable named clite_sample_<number>_<name>.
+# Source file: samples/<number>_<name>.c
+# ------------------------------------------------------------------------------
+function(clite_add_sample number name)
+    set(_target  "clite_sample_${number}")
+    set(_source  "${CMAKE_CURRENT_SOURCE_DIR}/${number}_${name}.c")
+
+    if(NOT EXISTS "${_source}")
+        message(STATUS "[CLite] Sample ${number}_${name}.c not yet written — skipping.")
+        return()
+    endif()
+
+    add_executable(${_target} "${_source}")
+    add_executable(xastudio::clite::sample::${number} ALIAS ${_target})
+
+    target_link_libraries(${_target} PRIVATE xastudio::clite)
+    target_compile_options(${_target} PRIVATE
+        $<$<C_COMPILER_ID:GNU,Clang,AppleClang>:-Wall -Wextra>
+    )
+
+    set_target_properties(${_target} PROPERTIES
+        OUTPUT_NAME "clite_sample_${number}_${name}"
+        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/samples"
+    )
+endfunction()
+
+# ------------------------------------------------------------------------------
+# Sample programs — registered as phases complete
+# ------------------------------------------------------------------------------
+
+# Phase 5 — first complete programs possible
+# clite_add_sample(01 hello_result)
+# clite_add_sample(02 arena_allocator)
+# clite_add_sample(03 safe_strings)
+# clite_add_sample(04 typed_vec)
+# clite_add_sample(05 logging)
+
+# Phase 6 — embedded no-stdlib sample
+# clite_add_sample(06 embedded_no_stdlib)
